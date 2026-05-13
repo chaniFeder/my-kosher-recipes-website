@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ספר מתכונים קולי</title>
+    <link rel="stylesheet" href="css/style.css">
+    
+    <script src="js/data-storage.js"></script> 
+    <script src="js/speech-reader.js"></script>
+    <script src="js/app.js"></script> 
+    
+</head>
+<body>
+
+<div id="login-screen" class="screen active">
+    <h1>כניסה למערכת</h1>
+    <form id="login-form">
+        <div class="input-group">
+            <label for="username">שם משתמש:</label>
+            <input type="text" id="username" required>
+        </div>
+        <div class="input-group">
+            <label for="password">סיסמא:</label>
+            <input type="password" id="password" required>
+        </div>
+        <p id="login-error-message" class="error-message"></p>
+        
+        <button type="submit" id="login-button" class="primary-btn">כניסה</button>
+        
+        <button type="button" class="secondary-btn" onclick="navigateToScreen('register-screen')">משתמש חדש? הרשמה</button>
+    </form>
+</div>
+
+<div id="register-screen" class="screen">
+    <h1>רישום משתמש חדש</h1>
+    <form id="register-form">
+        <div class="input-group">
+            <label for="reg-username">שם משתמש:</label>
+            <input type="text" id="reg-username" required>
+        </div>
+        <div class="input-group">
+            <label for="reg-password">סיסמא:</label>
+            <input type="password" id="reg-password" required>
+        </div>
+        <div class="input-group">
+            <label for="reg-password-confirm">אישור סיסמא:</label>
+            <input type="password" id="reg-password-confirm" required>
+        </div>
+        
+        <div class="input-group">
+            <label>ערכת נושא ראשונית:</label>
+            <div id="reg-theme-options">
+                <input type="radio" id="reg-theme-light" name="reg-theme" value="light" checked>
+                <label for="reg-theme-light" class="radio-label">בהיר (ברירת מחדל)</label>
+                <input type="radio" id="reg-theme-dark" name="reg-theme" value="dark">
+                <label for="reg-theme-dark" class="radio-label">כהה</label>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="reg-delay-time">זמן השהייה בין שלבים (שניות):</label>
+            <input type="number" id="reg-delay-time" value="3.0" min="1" max="10" step="0.5" required>
+        </div>
+        <p id="register-error-message" class="error-message"></p>
+        
+        <button type="submit" class="primary-btn">הרשמה וכניסה</button>
+        <button type="button" class="secondary-btn" onclick="navigateToScreen('login-screen')">חזרה לכניסה</button>
+    </form>
+</div>
+
+<div id="recipe-list-screen" class="screen">
+    <h1>ספר המתכונים שלי</h1>
+    
+    <div id="list-message-area" class="message-area" style="display: none;"></div>
+    
+    <div class="filter-controls">
+        <div class="filter-group">
+            <label for="category-filter">סינון קטגוריה:</label>
+            <select id="category-filter"></select>
+        </div>
+        
+        <div class="filter-group">
+            <label for="search-input">חיפוש חופשי:</label>
+            <input type="text" id="search-input" placeholder="הקלד שם או מילה במרכיב...">
+        </div>
+
+        <button id="add-recipe-btn" class="primary-btn">➕ הוספת מתכון חדש</button>
+    </div>
+    
+    <div id="recipes-container" class="recipes-grid">
+        </div>
+
+    <p id="no-recipes-message" style="display: none;">לא נמצאו מתכונים תואמים.</p>
+    
+    <hr>
+    <div class="controls-group">
+        <button class="secondary-btn" onclick="navigateToScreen('settings-screen')">⚙️ הגדרות משתמש</button>
+        <button class="secondary-btn" onclick="handleLogout()">🚪 יציאה</button>
+    </div>
+</div>
+
+<div id="recipe-view-screen" class="screen">
+    <h1 id="recipe-title"></h1>
+    <p><small>מאת: <span id="recipe-author"></span> | קטגוריה: <span id="recipe-category"></span></small></p>
+    
+    <div id="speech-controls" class="controls-group">
+        <button id="start-reading-btn" class="primary-btn">▶️ התחל/המשך הקראה</button>
+        <button id="stop-reading-btn" class="secondary-btn" disabled>⏹️ עצור הקראה</button>
+        <button id="settings-from-recipe-btn" class="secondary-btn" onclick="navigateToScreen('settings-screen')">⚙️ הגדרות</button>
+        <button id="delete-recipe-btn" class="danger-btn">🗑️ מחיקת מתכון</button> 
+        <button id="back-to-list-btn" class="secondary-btn" onclick="navigateToScreen('recipe-list-screen')">חזרה לרשימה</button>
+    </div>
+    
+    <hr>
+    
+    <div id="recipe-content">
+        <h2>תקציר</h2>
+        <p id="recipe-description"></p>
+
+        <h2>חומרים</h2>
+        <ul id="recipe-ingredients-list">
+        </ul>
+        
+        <h2>אופן ההכנה (לחץ על שלב כדי להתחיל ממנו)</h2>
+        <ol id="recipe-instructions-list">
+        </ol>
+        
+    </div>
+</div>
+
+<div id="settings-screen" class="screen">
+    <h1>הגדרות משתמש</h1>
+    <form id="settings-form">
+        <div class="input-group">
+            <label>ערכת נושא:</label>
+            <div id="theme-options">
+                <input type="radio" id="theme-light" name="theme" value="light">
+                <label for="theme-light" class="radio-label">בהיר</label>
+                <input type="radio" id="theme-dark" name="theme" value="dark">
+                <label for="theme-dark" class="radio-label">כהה</label>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <label for="delay-time">זמן השהייה בין שלבים (שניות):</label>
+            <input type="number" id="delay-time" value="3.0" min="1" max="10" step="0.5" required>
+            <p class="description">הגדירו כמה זמן (1-10 שניות) לחכות בין שלב הכנה אחד לשני.</p>
+        </div>
+        
+        <button type="submit" class="primary-btn">שמור הגדרות</button>
+        <button type="button" class="secondary-btn" onclick="navigateToScreen('recipe-list-screen')">ביטול וחזרה</button>
+    </form>
+</div>
+
+<div id="add-recipe-screen" class="screen">
+    <h1>הוספת מתכון חדש</h1>
+    <form id="add-recipe-form">
+        <div class="input-group">
+            <label for="add-recipe-title">שם המתכון:</label>
+            <input type="text" id="add-recipe-title" required>
+        </div>
+
+        <div class="input-group">
+            <label for="add-recipe-category">קטגוריה:</label>
+            <select id="add-recipe-category" required>
+                </select>
+        </div>
+        
+        <div id="new-category-group" class="input-group" style="display: none;">
+            <label for="new-category-input">שם קטגוריה חדשה:</label>
+            <input type="text" id="new-category-input" placeholder="הזן שם קטגוריה חדשה" />
+        </div>
+
+        <div class="input-group">
+            <label for="add-recipe-description">תקציר/תיאור קצר:</label>
+            <textarea id="add-recipe-description" rows="3" required></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="add-recipe-ingredients">מרכיבים (הזן כל מרכיב בשורה חדשה):</label>
+            <textarea id="add-recipe-ingredients" rows="5" required></textarea>
+        </div>
+
+        <div class="input-group">
+            <label for="add-recipe-instructions">הוראות הכנה (הזן כל שלב בשורה חדשה):</label>
+            <textarea id="add-recipe-instructions" rows="7" required></textarea>
+        </div>
+
+        <p id="add-recipe-error-message" class="error-message"></p>
+
+        <div class="controls-group">
+            <button type="submit" class="primary-btn">שמור מתכון</button>
+            <button type="button" class="secondary-btn" onclick="navigateToScreen('recipe-list-screen')">ביטול</button>
+        </div>
+    </form>
+</div>
+
+
+</body>
+</html>
